@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Filters\CustomerFilter;
+use App\Http\Requests\StoreCustomerRequest;
 use App\Models\Customer;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerCollection;
@@ -17,8 +18,12 @@ class CustomerController extends Controller
     {
         $filter     = new CustomerFilter();
         $queryItems = $filter->transform($request);
-
+        $includedInvoices = $request->query("includedInvoices");
         $customers  = Customer::where($queryItems);
+
+        if ($includedInvoices) {
+            $customers = $customers->with("invoices");
+        }
 
         return new CustomerCollection($customers->paginate()->appends($request->query()));
     }
@@ -33,6 +38,7 @@ class CustomerController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     */
     public function store(StoreCustomerRequest $request)
     {
         //
